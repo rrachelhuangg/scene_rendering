@@ -8,8 +8,27 @@
 #include "sphere.h"
 #include "plane.h"
 
-COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T object, VP_T normal, LIGHT_T light_ray){ //gets first pointer from the object, scene should be the only thing passed to trace and illuminate,
+int shadow_test(VP_T inter_pt, VP_T normal, OBJ_T *objects, int closest_object_index, LIGHT_T light_ray){ //static?
+    RAY_T shadow_ray;
+    shadow_ray.origin = inter_pt;
+    shadow_ray.dir.x = light_ray.light_loc.x-inter_pt.x;
+    shadow_ray.dir.y = light_ray.light_loc.y - inter_pt.y;
+    shadow_ray.dir.z = light_ray.light_loc.z - inter_pt.z;
+    shadow_ray.dir = normalize(shadow_ray.dir);
+    double t; 
+    for(int i = 0; i < NUM_OBJS; i++){
+        if(i!= closest_object_index && objects[i].intersect(shadow_ray, &objects[i], &t, &inter_pt, &normal)){
+            if(t>0){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T *objects, int closest_object_index, VP_T normal, LIGHT_T light_ray){ //gets first pointer from the object (closest), scene should be the only thing passed to trace and illuminate,
     //illuminates the pixel appropriately based on the light location and the pixel location
+    OBJ_T object = objects[closest_object_index];
     COLOR_T obj_color = object.color;
     if(object.checker==1){
         if((int)floor(inter_pt.x)+(int)floor(inter_pt.y)+(int)(inter_pt.z)&1){
@@ -23,6 +42,9 @@ COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T object, VP_T normal, LIGHT_T 
     color.R = obj_color.R*0.1; //ambient lighting
     color.G = obj_color.G*0.1;
     color.B = obj_color.B*0.1;
+    if(shadow_test(inter_pt, normal, objects, closest_object_index, light_ray)){
+        return color;
+    }
     VP_T l_vector;
     l_vector.x = light_ray.light_loc.x-inter_pt.x;
     l_vector.y = light_ray.light_loc.y-inter_pt.y;
@@ -81,7 +103,7 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
         }
     }
     if(closest_object_index != -1){
-        return illuminate(ray, closest_int_pt, objects[closest_object_index], closest_normal, light_ray);
+        return illuminate(ray, closest_int_pt, objects, closest_object_index, closest_normal, light_ray);
     }
     else{
         COLOR_T background;
@@ -106,8 +128,8 @@ void init(OBJ_T *objects){
     objects[1].checker = 0;
     objects[1].sphere.origin.x = 3;
     objects[1].sphere.origin.y = 3;
-    objects[1].sphere.origin.z = 10;
-    objects[1].sphere.radius = 1;
+    objects[1].sphere.origin.z = 9;
+    objects[1].sphere.radius = 1.5;
     objects[1].color.R = 0;
     objects[1].color.G = 0;
     objects[1].color.B = 1;
