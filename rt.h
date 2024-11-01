@@ -3,6 +3,7 @@
 #define RT_H
 #define NUM_OBJS 2
 #include "vp.h"
+#include "sphere.h"
 #include <stdio.h>
 
 //ray type
@@ -10,12 +11,6 @@ typedef struct{
     VP_T origin;
     VP_T dir;
 } RAY_T;
-
-//sphere type
-typedef struct{
-    VP_T origin;
-    double radius;
-} SPHERE_T;
 
 //ray type
 typedef struct{
@@ -36,10 +31,6 @@ typedef struct OBJ{
     COLOR_T color2;
     int (*intersect)(RAY_T ray, struct OBJ *obj, double *t, VP_T *int_pt, VP_T *normal);
 } OBJ_T;
-
-typedef struct{
-    VP_T light_loc;
-} LIGHT_T;
 
 // int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal);
 

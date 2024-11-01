@@ -3,6 +3,8 @@
 #include <math.h>
 #include "rt.h"
 #include "vp.h"
+#include "light.h"
+#include "sphere.h"
 
 int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal){
     //checks to see if the input ray intersects the sphere and calculates the t value, the intersection point, and the normal
