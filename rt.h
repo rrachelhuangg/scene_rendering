@@ -35,12 +35,14 @@ typedef struct OBJ{
         SPHERE_T sphere;
         PLANE_T plane;
     };
-    char type;
+    // char type;
     COLOR_T color;
     int checker;
     COLOR_T color2;
     int (*intersect)(RAY_T ray, struct OBJ *obj, double *t, VP_T *int_pt, VP_T *normal);
 } OBJ_T;
+
+//need all the function prototypes to safeguard against mismatch
 
 // int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal);
 

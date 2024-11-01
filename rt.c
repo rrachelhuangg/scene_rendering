@@ -1,5 +1,6 @@
 //ray tracer for an illuminated sphere
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "rt.h"
 #include "vp.h"
@@ -7,8 +8,9 @@
 #include "sphere.h"
 #include "plane.h"
 
-int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal){
+int intersect_sphere(RAY_T ray, OBJ_T *object, double *t, VP_T *inter_pt, VP_T *normal){
     //checks to see if the input ray intersects the sphere and calculates the t value, the intersection point, and the normal
+    SPHERE_T sphere = object->sphere;
     double A = 1.0;
     double B = 2*(ray.dir.x*(ray.origin.x-sphere.origin.x)+
                   ray.dir.y*(ray.origin.y-sphere.origin.y)+
@@ -113,24 +115,12 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
 
     for(int i = 0; i < NUM_OBJS; i++){
         double t;
-        if(objects[i].type == 's'){
-            if(intersect_sphere(ray, objects[i].sphere, &t, &inter_pt, &normal)){ 
-                if(t < closest_t){
-                    closest_t = t;
-                    closest_object_index = i;
-                    closest_int_pt = inter_pt;
-                    closest_normal = normal;
-                }
-            }
-        }
-        if(objects[i].type == 'p'){
-            if(intersect_plane(ray, objects[i].plane, &t, &inter_pt, &normal)){
-                if(t < closest_t){
-                    closest_t = t;
-                    closest_object_index = i;
-                    closest_int_pt = inter_pt;
-                    closest_normal = normal;
-                }
+        if(objects[i].intersect(ray, &objects[i], &t, &inter_pt, &normal)){ 
+            if(t < closest_t){
+                closest_t = t;
+                closest_object_index = i;
+                closest_int_pt = inter_pt;
+                closest_normal = normal;
             }
         }
     }
@@ -146,10 +136,7 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     }
 }
 
-int main(){
-    OBJ_T objects[3];
-
-    objects[0].type = 's';
+void init(OBJ_T *objects){
     objects[0].checker = 0;
     objects[0].sphere.origin.x = 1;
     objects[0].sphere.origin.y = 1;
@@ -158,8 +145,8 @@ int main(){
     objects[0].color.R = 1;
     objects[0].color.G = 0;
     objects[0].color.B = 0;
-    
-    objects[1].type = 's';
+    objects[0].intersect = intersect_sphere;
+
     objects[1].checker = 0;
     objects[1].sphere.origin.x = 3;
     objects[1].sphere.origin.y = 3;
@@ -168,8 +155,8 @@ int main(){
     objects[1].color.R = 0;
     objects[1].color.G = 0;
     objects[1].color.B = 1;
+    objects[1].intersect = intersect_sphere;
 
-    objects[2].type = 'p';
     objects[2].checker = 1;
     objects[2].plane.normal.x = 0;
     objects[2].plane.normal.y = 1;
@@ -178,6 +165,13 @@ int main(){
     objects[2].color.R = 1.0;
     objects[2].color.G = 1.0;
     objects[2].color.B = 1.0;
+    objects[2].intersect = intersect_plane;
+}
+
+int main(){
+    OBJ_T *objects = (OBJ_T *)malloc(NUM_OBJS*sizeof(OBJ_T));
+
+    init(objects);
 
     LIGHT_T light_ray;
     light_ray.light_loc.x = 5;
@@ -203,7 +197,6 @@ int main(){
 
             unsigned char pixel[3];
 
-            //save closest_t, closest_int_pt, closest_normal, closest_object_index
             COLOR_T illuminated_color = trace(ray, objects, light_ray);
             pixel[0] = (unsigned char)(illuminated_color.R*255);
             pixel[1] = (unsigned char)(illuminated_color.G*255);
@@ -211,6 +204,8 @@ int main(){
             printf("%c%c%c", pixel[0], pixel[1], pixel[2]);
         }
     }
+
+    free(objects);
 
     return 0;
 }
