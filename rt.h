@@ -3,7 +3,6 @@
 #define RT_H
 #define NUM_OBJS 3
 #include "vp.h"
-#include "sphere.h"
 #include <stdio.h>
 
 //ray type
@@ -41,6 +40,14 @@ typedef struct OBJ{
     COLOR_T color2;
     int (*intersect)(RAY_T ray, struct OBJ *obj, double *t, VP_T *int_pt, VP_T *normal);
 } OBJ_T;
+
+typedef struct{
+    VP_T light_loc;
+    double D;
+} LIGHT_T;
+
+//light type should also be here
+//intersect sphere should go in sphere.c
 
 //need all the function prototypes to safeguard against mismatch
 
