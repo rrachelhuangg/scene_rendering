@@ -43,12 +43,14 @@ COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T *objects, int closest_object_
     l_vector.y = light_ray.light_loc.y-inter_pt.y;
     l_vector.z = light_ray.light_loc.z-inter_pt.z;
     l_vector = normalize(l_vector);
+    double dL = length(l_vector);
+    double attenuation = 1/(0.002*(dL*dL)+0.02*dL+0.2);
     double dp = dot(l_vector, normal); 
     if(dp>0){
         //diffuse lighting
-        color.R += dp*obj_color.R;
-        color.G += dp*obj_color.G;
-        color.B += dp*obj_color.B;
+        color.R += dp*obj_color.R*attenuation;
+        color.G += dp*obj_color.G*attenuation;
+        color.B += dp*obj_color.B*attenuation;
         //specular lighting
         VP_T r_vector;
         r_vector.x=l_vector.x-(normal.x*2*dp);
@@ -57,9 +59,9 @@ COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T *objects, int closest_object_
         r_vector=normalize(r_vector);
         double dp2 = dot(r_vector,ray.dir);
         if(dp2>0){
-            color.R+=pow(dp2, 200);
-            color.G+=pow(dp2, 200);
-            color.B+=pow(dp2, 200);
+            color.R+=pow(dp2, 200)*attenuation;
+            color.G+=pow(dp2, 200)*attenuation;
+            color.B+=pow(dp2, 200)*attenuation;
         }
         
     }
