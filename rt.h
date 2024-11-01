@@ -1,7 +1,7 @@
 
 #ifndef RT_H
 #define RT_H
-#define NUM_OBJS 2
+#define NUM_OBJS 3
 #include "vp.h"
 #include "sphere.h"
 #include <stdio.h>
@@ -19,11 +19,21 @@ typedef struct{
     double B;
 } COLOR_T;
 
+typedef struct{
+    VP_T origin;
+    double radius;
+} SPHERE_T;
+
+typedef struct{
+    VP_T normal; 
+    double D;
+} PLANE_T;
+
 //object type
 typedef struct OBJ{
     union{
         SPHERE_T sphere;
-        // PLANE_T plane;
+        PLANE_T plane;
     };
     char type;
     COLOR_T color;

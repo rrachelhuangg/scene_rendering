@@ -5,6 +5,7 @@
 #include "vp.h"
 #include "light.h"
 #include "sphere.h"
+#include "plane.h"
 
 int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal){
     //checks to see if the input ray intersects the sphere and calculates the t value, the intersection point, and the normal
@@ -27,8 +28,8 @@ int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T
     if(t_1==t_2 || t_1<t_2){
         *t=t_1;
     }
-    else{
-        *t=t_2;
+    else if(t_2<t_1){
+        *t = t_2;
     }
 
     VP_T intersection_point;
@@ -47,8 +48,16 @@ int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T
     return 1;
 }
 
-COLOR_T illuminate(RAY_T ray, VP_T inter_pt, COLOR_T obj_color, VP_T normal, LIGHT_T light_ray){ 
+COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T object, VP_T normal, LIGHT_T light_ray){ 
     //illuminates the pixel appropriately based on the light location and the pixel location
+
+    COLOR_T obj_color = object.color;
+    if(object.checker==1){
+        if((int)floor(inter_pt.x)+(int)floor(inter_pt.y)+(int)(inter_pt.z)&1){
+            obj_color = object.color2;
+        }
+    }
+
     COLOR_T color; 
     color.R = 0;
     color.G = 0;
@@ -93,7 +102,7 @@ COLOR_T illuminate(RAY_T ray, VP_T inter_pt, COLOR_T obj_color, VP_T normal, LIG
     return color;
 }
 
-COLOR_T trace(RAY_T ray, SPHERE_T *spheres, COLOR_T *colors, LIGHT_T light_ray){
+COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     //illuminates the pixel if the ray intersects the sphere, else the pixel is black
     double closest_t = 1000;
     int closest_object_index = -1;
@@ -104,57 +113,71 @@ COLOR_T trace(RAY_T ray, SPHERE_T *spheres, COLOR_T *colors, LIGHT_T light_ray){
 
     for(int i = 0; i < NUM_OBJS; i++){
         double t;
-        if(intersect_sphere(ray, spheres[i], &t, &inter_pt, &normal)){ 
-            if(t < closest_t){
-                closest_t = t;
-                closest_object_index = i;
-                closest_int_pt = inter_pt;
-                closest_normal = normal;
+        if(objects[i].type == 's'){
+            if(intersect_sphere(ray, objects[i].sphere, &t, &inter_pt, &normal)){ 
+                if(t < closest_t){
+                    closest_t = t;
+                    closest_object_index = i;
+                    closest_int_pt = inter_pt;
+                    closest_normal = normal;
+                }
+            }
+        }
+        if(objects[i].type == 'p'){
+            if(intersect_plane(ray, objects[i].plane, &t, &inter_pt, &normal)){
+                if(t < closest_t){
+                    closest_t = t;
+                    closest_object_index = i;
+                    closest_int_pt = inter_pt;
+                    closest_normal = normal;
+                }
             }
         }
     }
     if(closest_object_index != -1){
-        return illuminate(ray, inter_pt, colors[closest_object_index], normal, light_ray);
+        return illuminate(ray, closest_int_pt, objects[closest_object_index], closest_normal, light_ray);
     }
     else{
-        COLOR_T black;
-        black.R = 0;
-        black.G = 0;
-        black.B = 0;
+        COLOR_T black; /*rename to background color blue or something*/
+        black.R = 0.3;
+        black.G = 0.3;
+        black.B = 0.5;
         return black;
     }
 }
 
-
 int main(){
-    SPHERE_T sphere;
-    sphere.origin.x = 0;
-    sphere.origin.y = 0;
-    sphere.origin.z = 10;
-    sphere.radius = 1;
+    OBJ_T objects[3];
 
-    COLOR_T sphere_color;
-    sphere_color.R = 1;
-    sphere_color.G = 0;
-    sphere_color.B = 0;
+    objects[0].type = 's';
+    objects[0].checker = 0;
+    objects[0].sphere.origin.x = 1;
+    objects[0].sphere.origin.y = 1;
+    objects[0].sphere.origin.z = 10;
+    objects[0].sphere.radius = 1;
+    objects[0].color.R = 1;
+    objects[0].color.G = 0;
+    objects[0].color.B = 0;
+    
+    objects[1].type = 's';
+    objects[1].checker = 0;
+    objects[1].sphere.origin.x = 3;
+    objects[1].sphere.origin.y = 3;
+    objects[1].sphere.origin.z = 10;
+    objects[1].sphere.radius = 1;
+    objects[1].color.R = 0;
+    objects[1].color.G = 0;
+    objects[1].color.B = 1;
 
-    SPHERE_T sphere2;
-    sphere2.origin.x = 2; 
-    sphere2.origin.y = 2;
-    sphere2.origin.z = 10;
-    sphere2.radius = 1;
-
-    COLOR_T sphere2_color;
-    sphere2_color.R = 0;
-    sphere2_color.G = 0;
-    sphere2_color.B = 1;
-
-    SPHERE_T spheres[2];
-    spheres[0] = sphere;
-    spheres[1] = sphere2;
-    COLOR_T colors[2];
-    colors[0] = sphere_color;
-    colors[1] = sphere2_color;
+    objects[2].type = 'p';
+    objects[2].checker = 1;
+    objects[2].plane.normal.x = 0;
+    objects[2].plane.normal.y = 1;
+    objects[2].plane.normal.z = 0;
+    objects[2].plane.D = 0.9;
+    objects[2].color.R = 1.0;
+    objects[2].color.G = 1.0;
+    objects[2].color.B = 1.0;
 
     LIGHT_T light_ray;
     light_ray.light_loc.x = 5;
@@ -181,7 +204,7 @@ int main(){
             unsigned char pixel[3];
 
             //save closest_t, closest_int_pt, closest_normal, closest_object_index
-            COLOR_T illuminated_color = trace(ray, spheres, colors, light_ray);
+            COLOR_T illuminated_color = trace(ray, objects, light_ray);
             pixel[0] = (unsigned char)(illuminated_color.R*255);
             pixel[1] = (unsigned char)(illuminated_color.G*255);
             pixel[2] = (unsigned char)(illuminated_color.B*255);
