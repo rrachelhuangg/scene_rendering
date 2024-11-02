@@ -1,15 +1,15 @@
 #include <math.h>
 #include "rt.h"
 #include "vp.h"
-int shadow_test(VP_T inter_pt, VP_T normal, OBJ_T *objects, OBJ_T *closest_object, LIGHT_T light_ray){ //static?
+int shadow_test(VP_T inter_pt, VP_T normal, SCENE_T *scene, OBJ_T *closest_object){ //static?
     RAY_T shadow_ray;
     shadow_ray.origin = inter_pt;
-    shadow_ray.dir.x = light_ray.light_loc.x-inter_pt.x;
-    shadow_ray.dir.y = light_ray.light_loc.y - inter_pt.y;
-    shadow_ray.dir.z = light_ray.light_loc.z - inter_pt.z;
+    shadow_ray.dir.x = scene->light.light_loc.x-inter_pt.x;
+    shadow_ray.dir.y = scene->light.light_loc.y - inter_pt.y;
+    shadow_ray.dir.z = scene->light.light_loc.z - inter_pt.z;
     shadow_ray.dir = normalize(shadow_ray.dir);
     double t; 
-    OBJ_T *curr = objects;
+    OBJ_T *curr = scene->objs;
     while(curr!=NULL){
         if(curr!=closest_object && curr->intersect(shadow_ray, curr, &t, &inter_pt, &normal)){
             if(t>0){
@@ -21,7 +21,7 @@ int shadow_test(VP_T inter_pt, VP_T normal, OBJ_T *objects, OBJ_T *closest_objec
     return 0;
 }
 
-COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T *objects, OBJ_T *closest_object, VP_T normal, LIGHT_T light_ray){ //gets first pointer from the object (closest), scene should be the only thing passed to trace and illuminate,
+COLOR_T illuminate(RAY_T ray, VP_T inter_pt, SCENE_T *scene, OBJ_T *closest_object, VP_T normal){ //gets first pointer from the object (closest), scene should be the only thing passed to trace and illuminate,
     //illuminates the pixel appropriately based on the light location and the pixel location
     COLOR_T obj_color = closest_object->color;
     if(closest_object->checker==1){
@@ -36,13 +36,13 @@ COLOR_T illuminate(RAY_T ray, VP_T inter_pt, OBJ_T *objects, OBJ_T *closest_obje
     color.R = obj_color.R*0.1; //ambient lighting
     color.G = obj_color.G*0.1;
     color.B = obj_color.B*0.1;
-    if(shadow_test(inter_pt, normal, objects, closest_object, light_ray)){
+    if(shadow_test(inter_pt, normal, scene, closest_object)){
         return color;
     }
     VP_T l_vector;
-    l_vector.x = light_ray.light_loc.x-inter_pt.x;
-    l_vector.y = light_ray.light_loc.y-inter_pt.y;
-    l_vector.z = light_ray.light_loc.z-inter_pt.z;
+    l_vector.x = scene->light.light_loc.x-inter_pt.x;
+    l_vector.y = scene->light.light_loc.y-inter_pt.y;
+    l_vector.z = scene->light.light_loc.z-inter_pt.z;
     l_vector = normalize(l_vector);
     double dL = length(l_vector);
     double attenuation = 1/(0.002*(dL*dL)+0.02*dL+0.2);

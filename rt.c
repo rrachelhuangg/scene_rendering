@@ -10,7 +10,7 @@
 
 //to-do:creative image, scene_t refactoring, aspect ratio, fix file I/O
 
-COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
+COLOR_T trace(RAY_T ray, SCENE_T *scene){
     //illuminates the pixel if the ray intersects the sphere, else the pixel is black
     double closest_t = 1000;
     OBJ_T *closest_object = NULL;
@@ -19,7 +19,7 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     VP_T inter_pt;
     VP_T normal;
 
-    OBJ_T *curr = objects;
+    OBJ_T *curr = scene->objs;
     while(curr != NULL){
         double t;
         if(curr->intersect(ray, curr, &t, &inter_pt, &normal)){
@@ -34,7 +34,7 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     }
 
     if(closest_object!=NULL){
-        return illuminate(ray, closest_int_pt, objects, closest_object, closest_normal, light_ray);
+        return illuminate(ray, inter_pt, scene, closest_object, normal);
     }
     else{
         COLOR_T background;
@@ -45,8 +45,8 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     }
 }
 
-void init(OBJ_T **objects){
-    *objects = NULL;
+void init(SCENE_T *scene){
+    scene->objs = NULL;
     for(int i = 0; i < NUM_OBJS; i++){
         OBJ_T *node = (OBJ_T *)malloc(sizeof(OBJ_T));
         if(node == NULL){
@@ -85,14 +85,17 @@ void init(OBJ_T **objects){
             node->color.B = 1.0;
             node->intersect = intersect_plane;
         }
-        node->next = *objects;
-        *objects = node;
+        node->next = scene->objs;
+        scene->objs = node;
     }
+    scene->light.light_loc.x = 5;
+    scene->light.light_loc.y = 10;
+    scene->light.light_loc.z = 0;
 }
 
 int main(){
-    OBJ_T *objects;
-    init(&objects);
+    SCENE_T scene;
+    init(&scene);
 
     LIGHT_T light_ray;
     light_ray.light_loc.x = 5;
@@ -118,7 +121,7 @@ int main(){
 
             unsigned char pixel[3];
 
-            COLOR_T illuminated_color = trace(ray, objects, light_ray);
+            COLOR_T illuminated_color = trace(ray, &scene);
             pixel[0] = (unsigned char)(illuminated_color.R*255);
             pixel[1] = (unsigned char)(illuminated_color.G*255);
             pixel[2] = (unsigned char)(illuminated_color.B*255);
@@ -126,9 +129,9 @@ int main(){
         }
     }
 
-    while(objects){
-        OBJ_T *temp = objects;
-        objects = objects->next;
+    while(scene.objs){
+        OBJ_T *temp = scene.objs;
+        scene.objs = scene.objs->next;
         free(temp);
     }
 

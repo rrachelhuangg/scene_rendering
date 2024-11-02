@@ -47,6 +47,14 @@ typedef struct{
     double D;
 } LIGHT_T;
 
+typedef struct{
+    OBJ_T *objs;
+    LIGHT_T light;
+    double start_x;
+    double start_y;
+    double pixel_size;
+} SCENE_T;
+
 //light type should also be here
 //intersect sphere should go in sphere.c
 
@@ -54,7 +62,7 @@ typedef struct{
 
 // int intersect_sphere(RAY_T ray, SPHERE_T sphere, double *t, VP_T *inter_pt, VP_T *normal);
 
-// COLOR_T illuminate(RAY_T ray, VP_T inter_pt, COLOR_T obj_color, VP_T normal, VP_T light_loc);
+// COLOR_T illuminate(RAY_T ray, VP_T inter_pt, SCENE_T *scene, OBJ_T *closest_object, VP_T normal);
 
 // COLOR_T trace(RAY_T ray, SPHERE_T sphere, COLOR_T sphere_color, VP_T light_loc);
 
