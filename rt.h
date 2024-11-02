@@ -39,6 +39,7 @@ typedef struct OBJ{
     int checker;
     COLOR_T color2;
     int (*intersect)(RAY_T ray, struct OBJ *obj, double *t, VP_T *int_pt, VP_T *normal);
+    struct OBJ *next;
 } OBJ_T;
 
 typedef struct{

@@ -8,28 +8,33 @@
 #include "sphere.h"
 #include "plane.h"
 
+//to-do:creative image, scene_t refactoring, aspect ratio, fix file I/O
+
 COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     //illuminates the pixel if the ray intersects the sphere, else the pixel is black
     double closest_t = 1000;
-    int closest_object_index = -1;
+    OBJ_T *closest_object = NULL;
     VP_T closest_int_pt;
     VP_T closest_normal;
     VP_T inter_pt;
     VP_T normal;
 
-    for(int i = 0; i < NUM_OBJS; i++){
+    OBJ_T *curr = objects;
+    while(curr != NULL){
         double t;
-        if(objects[i].intersect(ray, &objects[i], &t, &inter_pt, &normal)){ 
+        if(curr->intersect(ray, curr, &t, &inter_pt, &normal)){
             if(t < closest_t){
                 closest_t = t;
-                closest_object_index = i;
+                closest_object = curr;
                 closest_int_pt = inter_pt;
                 closest_normal = normal;
             }
         }
+        curr=curr->next;
     }
-    if(closest_object_index != -1){
-        return illuminate(ray, closest_int_pt, objects, closest_object_index, closest_normal, light_ray);
+
+    if(closest_object!=NULL){
+        return illuminate(ray, closest_int_pt, objects, closest_object, closest_normal, light_ray);
     }
     else{
         COLOR_T background;
@@ -40,42 +45,54 @@ COLOR_T trace(RAY_T ray, OBJ_T *objects, LIGHT_T light_ray){
     }
 }
 
-void init(OBJ_T *objects){
-    objects[0].checker = 0;
-    objects[0].sphere.origin.x = 1;
-    objects[0].sphere.origin.y = 1;
-    objects[0].sphere.origin.z = 10;
-    objects[0].sphere.radius = 1;
-    objects[0].color.R = 1;
-    objects[0].color.G = 0;
-    objects[0].color.B = 0;
-    objects[0].intersect = intersect_sphere;
-
-    objects[1].checker = 0;
-    objects[1].sphere.origin.x = 3;
-    objects[1].sphere.origin.y = 3;
-    objects[1].sphere.origin.z = 9;
-    objects[1].sphere.radius = 1.5;
-    objects[1].color.R = 0;
-    objects[1].color.G = 0;
-    objects[1].color.B = 1;
-    objects[1].intersect = intersect_sphere;
-
-    objects[2].checker = 1;
-    objects[2].plane.normal.x = 0;
-    objects[2].plane.normal.y = 1;
-    objects[2].plane.normal.z = 0;
-    objects[2].plane.D = 0.9;
-    objects[2].color.R = 1.0;
-    objects[2].color.G = 1.0;
-    objects[2].color.B = 1.0;
-    objects[2].intersect = intersect_plane;
+void init(OBJ_T **objects){
+    *objects = NULL;
+    for(int i = 0; i < NUM_OBJS; i++){
+        OBJ_T *node = (OBJ_T *)malloc(sizeof(OBJ_T));
+        if(node == NULL){
+            exit(1);
+        }
+        if(i==0){
+            node->checker = 0;
+            node->sphere.origin.x = 1;
+            node->sphere.origin.y = 1;
+            node->sphere.origin.z = 10;
+            node->sphere.radius = 1;
+            node->color.R = 1;
+            node->color.G = 0;
+            node->color.B = 0;
+            node->intersect = intersect_sphere;
+        }
+        else if(i==1){
+            node->checker = 0;
+            node->sphere.origin.x = 3;
+            node->sphere.origin.y = 3;
+            node->sphere.origin.z = 9;
+            node->sphere.radius = 1.5;
+            node->color.R = 0;
+            node->color.G = 0;
+            node->color.B = 1;
+            node->intersect = intersect_sphere;
+        }
+        else if(i==2){
+            node->checker = 1;
+            node->plane.normal.x = 0;
+            node->plane.normal.y = 1;
+            node->plane.normal.z = 0;
+            node->plane.D = 0.9;
+            node->color.R = 1.0;
+            node->color.G = 1.0;
+            node->color.B = 1.0;
+            node->intersect = intersect_plane;
+        }
+        node->next = *objects;
+        *objects = node;
+    }
 }
 
 int main(){
-    OBJ_T *objects = (OBJ_T *)malloc(NUM_OBJS*sizeof(OBJ_T));
-
-    init(objects);
+    OBJ_T *objects;
+    init(&objects);
 
     LIGHT_T light_ray;
     light_ray.light_loc.x = 5;
@@ -109,7 +126,11 @@ int main(){
         }
     }
 
-    free(objects);
+    while(objects){
+        OBJ_T *temp = objects;
+        objects = objects->next;
+        free(temp);
+    }
 
     return 0;
 }
