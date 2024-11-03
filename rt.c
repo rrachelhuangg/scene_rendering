@@ -8,7 +8,7 @@
 #include "sphere.h"
 #include "plane.h"
 
-//to-do:creative image, scene_t refactoring, aspect ratio, fix file I/O
+//to-do:creative image, aspect ratio, fix file output (write to file)
 
 COLOR_T trace(RAY_T ray, SCENE_T *scene){
     //illuminates the pixel if the ray intersects the sphere, else the pixel is black
@@ -46,61 +46,51 @@ COLOR_T trace(RAY_T ray, SCENE_T *scene){
 }
 
 void init(SCENE_T *scene){
-    scene->objs = NULL;
-    for(int i = 0; i < NUM_OBJS; i++){
-        OBJ_T *node = (OBJ_T *)malloc(sizeof(OBJ_T));
-        if(node == NULL){
-            exit(1);
-        }
-        if(i==0){
-            node->checker = 0;
-            node->sphere.origin.x = 1;
-            node->sphere.origin.y = 1;
-            node->sphere.origin.z = 10;
-            node->sphere.radius = 1;
-            node->color.R = 1;
-            node->color.G = 0;
-            node->color.B = 0;
-            node->intersect = intersect_sphere;
-        }
-        else if(i==1){
-            node->checker = 0;
-            node->sphere.origin.x = 3;
-            node->sphere.origin.y = 3;
-            node->sphere.origin.z = 9;
-            node->sphere.radius = 1.5;
-            node->color.R = 0;
-            node->color.G = 0;
-            node->color.B = 1;
-            node->intersect = intersect_sphere;
-        }
-        else if(i==2){
-            node->checker = 1;
-            node->plane.normal.x = 0;
-            node->plane.normal.y = 1;
-            node->plane.normal.z = 0;
-            node->plane.D = 0.9;
-            node->color.R = 1.0;
-            node->color.G = 1.0;
-            node->color.B = 1.0;
-            node->intersect = intersect_plane;
-        }
-        node->next = scene->objs;
-        scene->objs = node;
+    FILE *fp = fopen("scene_image_file.txt","r");
+    if(!fp){
+        perror("Name of input scene file incorrect.");
+        exit(1);
     }
-    scene->light.light_loc.x = 5;
-    scene->light.light_loc.y = 10;
-    scene->light.light_loc.z = 0;
+    scene->objs=NULL;
+    char object_type;
+    while(fscanf(fp, " %c", &object_type)==1){
+        if(object_type == 's'){
+            OBJ_T *node = (OBJ_T *)malloc(sizeof(OBJ_T));
+            if(node == NULL){
+                exit(1);
+            }
+            fscanf(fp, "%lf %lf %lf", &node->sphere.origin.x, &node->sphere.origin.y, &node->sphere.origin.z);
+            fscanf(fp, "%lf", &node->sphere.radius);
+            fscanf(fp, "%lf %lf %lf", &node->color.R, &node->color.G, &node->color.B);
+            node->checker = 0;
+            node->intersect = intersect_sphere;
+            node->next = scene->objs;
+            scene->objs = node;       
+        }
+        else if(object_type == 'p'){
+            OBJ_T *node = (OBJ_T *)malloc(sizeof(OBJ_T));
+            if(node == NULL){
+                exit(1);
+            }
+            fscanf(fp, "%lf %lf %lf", &node->plane.normal.x, &node->plane.normal.y, &node->plane.normal.z);
+            fscanf(fp, "%lf", &node->plane.D);
+            fscanf(fp, "%lf %lf %lf", &node->color.R, &node->color.G, &node->color.B);
+            fscanf(fp, "%lf %lf %lf", &node->color2.R, &node->color2.G, &node->color2.B);
+            node->checker = 1;
+            node->intersect = intersect_plane;
+            node->next = scene->objs;
+            scene->objs = node;
+        }
+        else if(object_type == 'l'){
+            fscanf(fp, "%lf %lf %lf", &scene->light.light_loc.x, &scene->light.light_loc.y, &scene->light.light_loc.z);
+        }
+    }
+    fclose(fp);
 }
 
 int main(){
     SCENE_T scene;
     init(&scene);
-
-    LIGHT_T light_ray;
-    light_ray.light_loc.x = 5;
-    light_ray.light_loc.y = 10;
-    light_ray.light_loc.z = 0;
 
     printf("P6\n");
     printf("%d %d\n", 1000, 1000);
