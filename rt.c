@@ -92,20 +92,29 @@ int main(){
     SCENE_T scene;
     init(&scene);
 
+    int NUM_ROWS = 480;
+    int NUM_COLS = 640;
+
+    scene.pixel_size = 1.0/((double)NUM_ROWS);
+    scene.start_y = 0.5;
+    scene.start_x = -((double)((double)NUM_COLS/(double)NUM_ROWS))/2.0;
+
+    fprintf(stderr,"%f", scene.start_x);
+
     FILE *output_image_file = fopen("scene_output_file.ppm", "w");
     fprintf(output_image_file, "P6\n");
-    fprintf(output_image_file, "%d %d\n", 1000, 1000);
+    fprintf(output_image_file, "%d %d\n", NUM_COLS, NUM_ROWS);
     fprintf(output_image_file, "%d\n", 255);
 
     int y, x;
-    for(y = 0; y < 1000; y++){
-        for(x = 0; x < 1000; x++){
+    for(y = 0; y < NUM_ROWS; y++){
+        for(x = 0; x < NUM_COLS; x++){
             RAY_T ray;
             ray.origin.x = 0;
             ray.origin.y = 0;
             ray.origin.z = 0;
-            ray.dir.x = -0.5+(x/1000.0);
-            ray.dir.y = 0.5-(y/1000.0);
+            ray.dir.x = scene.start_x + (x+scene.pixel_size) * scene.pixel_size;
+            ray.dir.y = scene.start_y - (y+scene.pixel_size) * scene.pixel_size;
             ray.dir.z = 1.0;
 
             ray.dir = normalize(ray.dir);
