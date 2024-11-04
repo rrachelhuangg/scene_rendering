@@ -92,9 +92,10 @@ int main(){
     SCENE_T scene;
     init(&scene);
 
-    printf("P6\n");
-    printf("%d %d\n", 1000, 1000);
-    printf("%d\n", 255);
+    FILE *output_image_file = fopen("scene_output_file.ppm", "w");
+    fprintf(output_image_file, "P6\n");
+    fprintf(output_image_file, "%d %d\n", 1000, 1000);
+    fprintf(output_image_file, "%d\n", 255);
 
     int y, x;
     for(y = 0; y < 1000; y++){
@@ -115,9 +116,11 @@ int main(){
             pixel[0] = (unsigned char)(illuminated_color.R*255);
             pixel[1] = (unsigned char)(illuminated_color.G*255);
             pixel[2] = (unsigned char)(illuminated_color.B*255);
-            printf("%c%c%c", pixel[0], pixel[1], pixel[2]);
+            fprintf(output_image_file, "%c%c%c", pixel[0], pixel[1], pixel[2]);
         }
     }
+
+    fclose(output_image_file);
 
     while(scene.objs){
         OBJ_T *temp = scene.objs;
