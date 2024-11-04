@@ -8,7 +8,7 @@
 #include "sphere.h"
 #include "plane.h"
 
-//to-do:creative image, aspect ratio, fix file output (write to file)
+//to-do:creative image, clean up code, make sure this stuff opens remotely, checkerboard colors are inverted?
 
 COLOR_T trace(RAY_T ray, SCENE_T *scene){
     //illuminates the pixel if the ray intersects the sphere, else the pixel is black
@@ -46,6 +46,7 @@ COLOR_T trace(RAY_T ray, SCENE_T *scene){
 }
 
 void init(SCENE_T *scene){
+    // FILE *fp = fopen("creative_scene_input.txt","r");
     FILE *fp = fopen("scene_image_file.txt","r");
     if(!fp){
         perror("Name of input scene file incorrect.");
@@ -99,8 +100,7 @@ int main(){
     scene.start_y = 0.5;
     scene.start_x = -((double)((double)NUM_COLS/(double)NUM_ROWS))/2.0;
 
-    fprintf(stderr,"%f", scene.start_x);
-
+    // FILE *output_image_file = fopen("creative_scene_output.ppm", "w");
     FILE *output_image_file = fopen("scene_output_file.ppm", "w");
     fprintf(output_image_file, "P6\n");
     fprintf(output_image_file, "%d %d\n", NUM_COLS, NUM_ROWS);
@@ -113,8 +113,8 @@ int main(){
             ray.origin.x = 0;
             ray.origin.y = 0;
             ray.origin.z = 0;
-            ray.dir.x = scene.start_x + (x+scene.pixel_size) * scene.pixel_size;
-            ray.dir.y = scene.start_y - (y+scene.pixel_size) * scene.pixel_size;
+            ray.dir.x = scene.start_x + (x*scene.pixel_size);
+            ray.dir.y = scene.start_y - (y*scene.pixel_size);
             ray.dir.z = 1.0;
 
             ray.dir = normalize(ray.dir);
