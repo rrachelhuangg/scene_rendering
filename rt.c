@@ -46,8 +46,8 @@ COLOR_T trace(RAY_T ray, SCENE_T *scene){
 }
 
 void init(SCENE_T *scene){
-    // FILE *fp = fopen("creative_scene_input.txt","r");
-    FILE *fp = fopen("scene_image_file.txt","r");
+    FILE *fp = fopen("creative_scene_input.txt","r");
+    // FILE *fp = fopen("scene_image_file.txt","r");
     if(!fp){
         perror("Name of input scene file incorrect.");
         exit(1);
@@ -100,8 +100,8 @@ int main(){
     scene.start_y = 0.5;
     scene.start_x = -((double)((double)NUM_COLS/(double)NUM_ROWS))/2.0;
 
-    // FILE *output_image_file = fopen("creative_scene_output.ppm", "w");
-    FILE *output_image_file = fopen("scene_output_file.ppm", "w");
+    FILE *output_image_file = fopen("creative_scene_output.ppm", "w");
+    // FILE *output_image_file = fopen("scene_output_file.ppm", "w");
     fprintf(output_image_file, "P6\n");
     fprintf(output_image_file, "%d %d\n", NUM_COLS, NUM_ROWS);
     fprintf(output_image_file, "%d\n", 255);
