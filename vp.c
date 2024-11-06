@@ -1,4 +1,4 @@
-//implements functions necessary for working with vectors
+//implements vector functions
 #include "vp.h"
 #include <math.h>
 

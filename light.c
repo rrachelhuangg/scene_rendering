@@ -1,7 +1,9 @@
+//implements light ray functions
 #include <math.h>
 #include "rt.h"
 #include "vp.h"
-int shadow_test(VP_T inter_pt, VP_T normal, SCENE_T *scene, OBJ_T *closest_object){ //static?
+static int shadow_test(VP_T inter_pt, VP_T normal, SCENE_T *scene, OBJ_T *closest_object){
+    //checks if the pixel is in shadow or not
     RAY_T shadow_ray;
     shadow_ray.origin = inter_pt;
     shadow_ray.dir.x = scene->light.light_loc.x-inter_pt.x;
@@ -21,7 +23,7 @@ int shadow_test(VP_T inter_pt, VP_T normal, SCENE_T *scene, OBJ_T *closest_objec
     return 0;
 }
 
-COLOR_T illuminate(RAY_T ray, VP_T inter_pt, SCENE_T *scene, OBJ_T *closest_object, VP_T normal){ //gets first pointer from the object (closest), scene should be the only thing passed to trace and illuminate,
+COLOR_T illuminate(RAY_T ray, VP_T inter_pt, SCENE_T *scene, OBJ_T *closest_object, VP_T normal){
     //illuminates the pixel appropriately based on the light location and the pixel location
     COLOR_T obj_color = closest_object->color;
     if(closest_object->checker==1){

@@ -1,3 +1,4 @@
+//implements sphere functions
 #include <math.h>
 #include "rt.h"
 #include "vp.h"

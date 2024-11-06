@@ -1,4 +1,4 @@
-//ray tracer for an illuminated sphere
+//ray tracer for an illuminated scene
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -8,10 +8,8 @@
 #include "sphere.h"
 #include "plane.h"
 
-//to-do:creative image, clean up code, make sure this stuff opens remotely, checkerboard colors are inverted?
-
 COLOR_T trace(RAY_T ray, SCENE_T *scene){
-    //illuminates the pixel if the ray intersects the sphere, else the pixel is black
+    //illuminates pixels based on how the ray intersects the scene's objects
     double closest_t = 1000;
     OBJ_T *closest_object = NULL;
     VP_T closest_int_pt;
@@ -46,8 +44,8 @@ COLOR_T trace(RAY_T ray, SCENE_T *scene){
 }
 
 void init(SCENE_T *scene){
-    FILE *fp = fopen("creative_scene_input.txt","r");
-    // FILE *fp = fopen("scene_image_file.txt","r");
+    //initialize the scene with the desired objects
+    FILE *fp = fopen("scene2.txt","r");
     if(!fp){
         perror("Name of input scene file incorrect.");
         exit(1);
@@ -100,8 +98,7 @@ int main(){
     scene.start_y = 0.5;
     scene.start_x = -((double)((double)NUM_COLS/(double)NUM_ROWS))/2.0;
 
-    FILE *output_image_file = fopen("creative_scene_output.ppm", "w");
-    // FILE *output_image_file = fopen("scene_output_file.ppm", "w");
+    FILE *output_image_file = fopen("scene2output.ppm", "w");
     fprintf(output_image_file, "P6\n");
     fprintf(output_image_file, "%d %d\n", NUM_COLS, NUM_ROWS);
     fprintf(output_image_file, "%d\n", 255);

@@ -1,14 +1,11 @@
 #ifndef VP_H
 #define VP_H 
 
-//vector type
 typedef struct{
     double x;
     double y;
     double z;
 } VP_T;
-
-/*can add other vector operations?*/
 
 double length(VP_T v);
 

@@ -1,4 +1,3 @@
-/*need a function prototype for intersect_plane*/
 #ifndef PLANE_H
 #define PLANE_H 
 
