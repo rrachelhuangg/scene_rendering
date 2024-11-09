@@ -1,4 +1,4 @@
-Extension of [Sphere Rendering via Ray Tracing](https://github.com/rrachelhuangg/pixel_sphere_rendering) with significant refactoring and renders complete image scenes with spheres and planes
+Extension of [Sphere Rendering via Ray Tracing](https://github.com/rrachelhuangg/pixel_sphere_rendering) with significant refactoring and rendering of complete image scenes with spheres and planes
 - Implemented arbitrary aspect ratio so that images are preserved when image dimensions are modified
 - Implemented light attenuation: the light loses power as the distance between it and the rendered objects increases
 - Implemented shadows
